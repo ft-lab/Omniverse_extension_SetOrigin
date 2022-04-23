@@ -8,6 +8,9 @@ import omni.usd
 from omni.kit.menu.utils import MenuItemDescription
 import asyncio
 
+from .scripts.CalcBoundingBox import CalcBoundingBox
+from .scripts.ReplaceMeshCenter import ReplaceMeshCenter
+
 # ----------------------------------------------------.
 class SetOriginExtension (omni.ext.IExt):
     # Menu list.
@@ -27,11 +30,36 @@ class SetOriginExtension (omni.ext.IExt):
 
         def menu_select (mode):
             if mode == 0:
-                print("Select MenuItem 1.")
+                # Get stage.
+                stage = omni.usd.get_context().get_stage()
+
+                # Get selection.
+                selection = omni.usd.get_context().get_selection()
+                paths = selection.get_selected_prim_paths()
+
+                prim = None
+                for path in paths:
+                    prim = stage.GetPrimAtPath(path)
+                    break
+
+                if prim != None:
+                    # Calculate center from bounding box.
+                    bbox = CalcBoundingBox(prim)
+                    bbMin, bbMax = bbox.calcBoundingBox()
+                    print("bbMin : " + str(bbMin))
+                    print("bbMax : " + str(bbMax))
+
+                    bbCenter = (bbMin + bbMax) * 0.5
+                    print(bbCenter)
+
+                    replaceM = ReplaceMeshCenter()
+
+                    prims = bbox.getTargetMeshes()
+                    for prim2 in prims:
+                        replaceM.replaceMeshVertices(prim2, bbCenter)
+
             if mode == 1:
                 print("Select MenuItem 2.")
-            if mode == 2:
-                print("Select MenuItem 3.")
 
         self._sub_menu_list = [
             MenuItemDescription(name="Center of Geometry", onclick_fn=lambda: menu_select(0)),
