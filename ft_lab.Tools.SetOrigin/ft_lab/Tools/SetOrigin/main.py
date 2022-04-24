@@ -4,12 +4,10 @@ import omni.usd
 import omni.kit.menu.utils
 import omni.kit.undo
 import omni.kit.commands
-import omni.usd
 from omni.kit.menu.utils import MenuItemDescription
 import asyncio
 
-from .scripts.CalcBoundingBox import CalcBoundingBox
-from .scripts.ReplaceMeshCenter import ReplaceMeshCenter
+from .scripts.SetOrigin import SetOrigin
 
 # ----------------------------------------------------.
 class SetOriginExtension (omni.ext.IExt):
@@ -30,30 +28,8 @@ class SetOriginExtension (omni.ext.IExt):
 
         def menu_select (mode):
             if mode == 0:
-                # Get stage.
-                stage = omni.usd.get_context().get_stage()
-
-                # Get selection.
-                selection = omni.usd.get_context().get_selection()
-                paths = selection.get_selected_prim_paths()
-
-                prim = None
-                for path in paths:
-                    prim = stage.GetPrimAtPath(path)
-                    break
-
-                if prim != None:
-                    # Calculate center from bounding box.
-                    bbox = CalcBoundingBox(prim)
-                    bbMin, bbMax = bbox.calcBoundingBox()
-                    print("bbMin : " + str(bbMin))
-                    print("bbMax : " + str(bbMax))
-
-                    bbCenter = (bbMin + bbMax) * 0.5
-                    print(bbCenter)
-
-                    replaceM = ReplaceMeshCenter()
-                    replaceM.replaceMeshVertices(prim, bbCenter)
+                setOrigin = SetOrigin()
+                setOrigin.doCenterOfGeometry()
 
             if mode == 1:
                 print("Select MenuItem 2.")

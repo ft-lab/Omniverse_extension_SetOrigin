@@ -1,4 +1,6 @@
-
+# -----------------------------------------------------.
+# Math functions.
+# -----------------------------------------------------.
 from pxr import Usd, UsdGeom, UsdShade, Sdf, Gf, Tf
 
 # Get local matrix.
