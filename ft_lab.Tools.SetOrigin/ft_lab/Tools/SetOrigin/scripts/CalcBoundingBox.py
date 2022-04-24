@@ -2,6 +2,7 @@
 # Calculate Bounding Boxes in Prims.
 # -----------------------------------------------------.
 from pxr import Usd, UsdGeom, UsdShade, Sdf, Gf, Tf
+from .MathUtil import *
 
 class CalcBoundingBox:
     _target_prim = None
@@ -27,20 +28,13 @@ class CalcBoundingBox:
                 prims.append(prim)
         return prims
 
-    # Get local matrix.
-    def _getLocalMatrix (self, prim : Usd.Prim):
-        curM = self._xformCache.GetLocalToWorldTransform(prim)
-        parentPrim = prim.GetParent()
-        matrix = curM * self._xformCache.GetLocalToWorldTransform(parentPrim).GetInverse()
-        return matrix
-
     # Calculate bounding box for one mesh.
     def _calcMeshBoundingBox (self, prim : Usd.Prim):
         # Get world Transform.
         globalM = self._xformCache.GetLocalToWorldTransform(prim)
         matrix = globalM * self._target_world_transform.GetInverse()
         if prim.GetPath() == self._target_prim.GetPath():
-            matrix = self._getLocalMatrix(prim)
+            matrix = GetLocalMatrix(prim)
 
         meshGeom = UsdGeom.Mesh(prim)
         bb_min = Gf.Vec3f(0.0, 0.0, 0.0)

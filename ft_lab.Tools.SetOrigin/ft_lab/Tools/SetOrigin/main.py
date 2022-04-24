@@ -53,10 +53,7 @@ class SetOriginExtension (omni.ext.IExt):
                     print(bbCenter)
 
                     replaceM = ReplaceMeshCenter()
-
-                    prims = bbox.getTargetMeshes()
-                    for prim2 in prims:
-                        replaceM.replaceMeshVertices(prim2, bbCenter)
+                    replaceM.replaceMeshVertices(prim, bbCenter)
 
             if mode == 1:
                 print("Select MenuItem 2.")
