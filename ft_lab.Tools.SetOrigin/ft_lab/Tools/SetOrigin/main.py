@@ -36,7 +36,7 @@ class SetOriginExtension (omni.ext.IExt):
 
         self._sub_menu_list = [
             MenuItemDescription(name="Center of Geometry", onclick_fn=lambda: menu_select(0)),
-            MenuItemDescription(name="Pivot Center of Geometry", onclick_fn=lambda: menu_select(1)),
+            MenuItemDescription(name="Center of Geometry (Pivot)", onclick_fn=lambda: menu_select(1)),
         ]
 
         self._menu_list = [

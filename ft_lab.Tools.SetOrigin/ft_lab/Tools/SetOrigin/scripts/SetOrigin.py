@@ -16,17 +16,21 @@ class ToolReplaceCenter (omni.kit.commands.Command):
     _prim = None
     _centerPos = None
     _prevTranslate = None
+    _prevPivot = None
     _centerPosL = None
 
-    def __init__ (self, prim : Usd.Prim, centerPos : Gf.Vec3f):
+    def __init__ (self, prim : Usd.Prim, center_position : Gf.Vec3f, use_pivot : bool = False):
         self._prim      = prim
-        self._centerPos = centerPos
+        self._centerPos = center_position
+        self._pivot     = use_pivot
 
     def do (self):
         self._prevTranslate = self._prim.GetAttribute("xformOp:translate").Get()
         if self._prevTranslate == None:
             self._prevTranslate = Gf.Vec3f(0, 0, 0)
-        
+
+        self._prevPivot = self._prim.GetAttribute("xformOp:translate:pivot").Get()
+
         localM = GetWorldMatrix(self._prim).GetInverse()
         self._centerPosL = localM.Transform(self._centerPos)
 
@@ -44,7 +48,11 @@ class ToolReplaceCenter (omni.kit.commands.Command):
             p = parentLocalM.Transform(self._centerPos)
 
             # Set position.
-            UsdGeom.XformCommonAPI(meshGeom).SetTranslate((p[0], p[1], p[2]))
+            self._prim.CreateAttribute("xformOp:translate", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(p))
+
+            # Set pivot.
+            if self._prevPivot != None:
+                self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(0, 0, 0))
 
     def undo (self):
         if self._prim.IsA(UsdGeom.Mesh):
@@ -58,7 +66,11 @@ class ToolReplaceCenter (omni.kit.commands.Command):
             meshGeom.CreatePointsAttr(vers)
 
             # Set position.
-            UsdGeom.XformCommonAPI(meshGeom).SetTranslate((self._prevTranslate[0], self._prevTranslate[1], self._prevTranslate[2]))
+            self._prim.CreateAttribute("xformOp:translate", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(self._prevTranslate))
+
+            # Set pivot.
+            if self._prevPivot != None:
+                self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(self._prevPivot))
 
 # ------------------------------------------------------------------------.
 class SetOrigin:
@@ -92,9 +104,19 @@ class SetOrigin:
 
         # Register a Class and run it.
         omni.kit.commands.register(ToolReplaceCenter)
-        omni.kit.commands.execute("ToolReplaceCenter", prim=prim, centerPos=bbCenter)
+        omni.kit.commands.execute("ToolReplaceCenter", prim=prim, center_position=bbCenter)
         
+    def doCenterOfGeometry_pivot (self):
+        prim = self._getSelectedPrim()
+        if prim == None:
+            return
+        
+        # Calculate world center from bounding box.
+        bbox = CalcWorldBoundingBox(prim)
+        bbMin, bbMax = bbox.calcBoundingBox()
+        bbCenter = (bbMin + bbMax) * 0.5
 
-
-
+        # Register a Class and run it.
+        omni.kit.commands.register(ToolReplaceCenter)
+        omni.kit.commands.execute("ToolReplaceCenter", prim=prim, center_position=bbCenter)
 
