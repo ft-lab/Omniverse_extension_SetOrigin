@@ -32,7 +32,8 @@ class SetOriginExtension (omni.ext.IExt):
                 setOrigin.doCenterOfGeometry()
 
             if mode == 1:
-                print("Select MenuItem 2.")
+                setOrigin = SetOrigin()
+                setOrigin.doCenterOfGeometry_pivot()
 
         self._sub_menu_list = [
             MenuItemDescription(name="Center of Geometry", onclick_fn=lambda: menu_select(0)),
