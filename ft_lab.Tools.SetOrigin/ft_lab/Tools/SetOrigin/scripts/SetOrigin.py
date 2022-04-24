@@ -6,13 +6,13 @@ import omni.usd
 import omni.kit.commands
 import omni.kit.undo
 
-from .CalcBoundingBox import CalcBoundingBox
+from .CalcWorldBoundingBox import CalcWorldBoundingBox
 from .MathUtil import *
 
 # ------------------------------------------------------------------------.
-# Move a Mesh verteices to change its center.
+# Change Mesh Center
 # ------------------------------------------------------------------------.
-class ToolReplaceMeshVertices (omni.kit.commands.Command):
+class ToolReplaceCenter (omni.kit.commands.Command):
     _prim = None
     _centerPos = None
     _prevTranslate = None
@@ -27,9 +27,8 @@ class ToolReplaceMeshVertices (omni.kit.commands.Command):
         if self._prevTranslate == None:
             self._prevTranslate = Gf.Vec3f(0, 0, 0)
         
-        localM = GetLocalMatrix(self._prim)
-        localInvM = localM.GetInverse()
-        self._centerPosL = localInvM.Transform(self._centerPos)
+        localM = GetWorldMatrix(self._prim).GetInverse()
+        self._centerPosL = localM.Transform(self._centerPos)
 
         if self._prim.IsA(UsdGeom.Mesh):
             meshGeom = UsdGeom.Mesh(self._prim)
@@ -41,8 +40,11 @@ class ToolReplaceMeshVertices (omni.kit.commands.Command):
 
             meshGeom.CreatePointsAttr(vers)
 
+            parentLocalM = GetWorldMatrix(self._prim.GetParent()).GetInverse()
+            p = parentLocalM.Transform(self._centerPos)
+
             # Set position.
-            UsdGeom.XformCommonAPI(meshGeom).SetTranslate((self._centerPos[0], self._centerPos[1], self._centerPos[2]))
+            UsdGeom.XformCommonAPI(meshGeom).SetTranslate((p[0], p[1], p[2]))
 
     def undo (self):
         if self._prim.IsA(UsdGeom.Mesh):
@@ -83,18 +85,14 @@ class SetOrigin:
         if prim == None:
             return
         
-        # Calculate center from bounding box.
-        bbox = CalcBoundingBox(prim)
+        # Calculate world center from bounding box.
+        bbox = CalcWorldBoundingBox(prim)
         bbMin, bbMax = bbox.calcBoundingBox()
-        print("bbMin : " + str(bbMin))
-        print("bbMax : " + str(bbMax))
-
         bbCenter = (bbMin + bbMax) * 0.5
-        print(bbCenter)
 
         # Register a Class and run it.
-        omni.kit.commands.register(ToolReplaceMeshVertices)
-        omni.kit.commands.execute("ToolReplaceMeshVertices", prim=prim, centerPos=bbCenter)
+        omni.kit.commands.register(ToolReplaceCenter)
+        omni.kit.commands.execute("ToolReplaceCenter", prim=prim, centerPos=bbCenter)
         
 
 

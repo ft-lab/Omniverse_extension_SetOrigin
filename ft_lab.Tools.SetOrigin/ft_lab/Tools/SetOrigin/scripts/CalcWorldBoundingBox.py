@@ -1,10 +1,10 @@
 # -----------------------------------------------------.
-# Calculate Bounding Boxes in Prims.
+# Calculate Bounding Boxes(world coordinate) in Prims.
 # -----------------------------------------------------.
 from pxr import Usd, UsdGeom, UsdShade, Sdf, Gf, Tf
 from .MathUtil import *
 
-class CalcBoundingBox:
+class CalcWorldBoundingBox:
     _target_prim = None
     _target_world_transform = None      # Gf.Matrix4d
     _xformCache = None
@@ -13,7 +13,7 @@ class CalcBoundingBox:
         self._target_prim = targetPrim
 
         # Get world Transform.
-        self._xformCache = UsdGeom.XformCache(0)
+        self._xformCache = UsdGeom.XformCache()
         self._target_world_transform = self._xformCache.GetLocalToWorldTransform(targetPrim)
 
     # Get Prims of Mesh.
@@ -32,9 +32,6 @@ class CalcBoundingBox:
     def _calcMeshBoundingBox (self, prim : Usd.Prim):
         # Get world Transform.
         globalM = self._xformCache.GetLocalToWorldTransform(prim)
-        matrix = globalM * self._target_world_transform.GetInverse()
-        if prim.GetPath() == self._target_prim.GetPath():
-            matrix = GetLocalMatrix(prim)
 
         meshGeom = UsdGeom.Mesh(prim)
         bb_min = Gf.Vec3f(0.0, 0.0, 0.0)
@@ -42,7 +39,7 @@ class CalcBoundingBox:
         firstF = True
         vers = meshGeom.GetPointsAttr().Get()
         for v in vers:
-            v = matrix.Transform(v)     # Convert to self._target_prim based coordinates.
+            v = globalM.Transform(v)     # Convert to world coordinates.
             if firstF:
                 firstF = False
                 bb_min = Gf.Vec3f(v)
@@ -79,12 +76,6 @@ class CalcBoundingBox:
             bb_max[2] = max(bb_max[2], _bbMax[2])
 
         return bb_min, bb_max
-
-    # Get target meshes.
-    def getTargetMeshes (self):
-        # Get Prims of Mesh.
-        prims = self._getMeshPrims(self._target_prim)
-        return prims
 
 
 
