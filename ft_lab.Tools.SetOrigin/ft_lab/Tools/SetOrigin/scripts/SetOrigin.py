@@ -41,8 +41,6 @@ class ToolReplaceCenter (omni.kit.commands.Command):
         self._centerPosL = localM.Transform(self._centerPos)
 
         if self._prim.IsA(UsdGeom.Mesh):
-            parentLocalM = GetWorldMatrix(self._prim.GetParent()).GetInverse()
-
             if self._pivot == False:
                 meshGeom = UsdGeom.Mesh(self._prim)
 
@@ -53,6 +51,7 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 meshGeom.CreatePointsAttr(vers)
 
                 # Set position.
+                parentLocalM = GetWorldMatrix(self._prim.GetParent()).GetInverse()
                 p = parentLocalM.Transform(self._centerPos)
                 TUtil_SetTranslate(self._prim, Gf.Vec3f(p))
 
@@ -60,10 +59,12 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 if self._prevPivot != None:
                     TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
             else:
-                p = parentLocalM.Transform(self._centerPos)
-                m2 = GetLocalMatrix(self._prim).GetInverse()
-                p = m2.Transform(p)
+                p = localM.Transform(self._centerPos)
                 self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(p))
+
+        elif self._prim.IsA(UsdGeom.Xform):
+            # For Xform, use only Pivot to adjust center.
+            parentLocalM = GetWorldMatrix(self._prim.GetParent()).GetInverse()
 
     # Undo process.
     def undo (self):
