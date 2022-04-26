@@ -8,6 +8,7 @@ import omni.kit.undo
 
 from .CalcWorldBoundingBox import CalcWorldBoundingBox
 from .MathUtil import *
+from .TransformUtil import *
 
 # ------------------------------------------------------------------------.
 # Change Mesh Center
@@ -27,6 +28,7 @@ class ToolReplaceCenter (omni.kit.commands.Command):
         self._centerPos = center_position
         self._pivot     = use_pivot
 
+    # Execute process.
     def do (self):
         self._prevTranslate = self._prim.GetAttribute("xformOp:translate").Get()
         if self._prevTranslate == None:
@@ -50,13 +52,12 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 meshGeom.CreatePointsAttr(vers)
 
                 # Set position.
-                # TODO : Add "xformOp:translate" to xformOpOrder.
                 p = parentLocalM.Transform(self._centerPos)
-                self._prim.CreateAttribute("xformOp:translate", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(p))
+                TUtil_SetTranslate(self._prim, Gf.Vec3f(p))
 
-                # Set pivot.
+                # Set pivot(0, 0, 0).
                 if self._prevPivot != None:
-                    self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(0, 0, 0))
+                    TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
             else:
                 # TODO : Add Pivot information to xformOpOrder.
                 if self._prevPivot == None:
@@ -67,6 +68,7 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 p = m2.Transform(p)
                 self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(p))
 
+    # Undo process.
     def undo (self):
         if self._prim.IsA(UsdGeom.Mesh):
             if self._pivot == False:
@@ -80,16 +82,16 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 meshGeom.CreatePointsAttr(vers)
 
                 # Set position.
-                self._prim.CreateAttribute("xformOp:translate", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(self._prevTranslate))
+                TUtil_SetTranslate(self._prim, Gf.Vec3f(self._prevTranslate))
 
                 # Set pivot.
                 if self._prevPivot != None:
-                    self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(self._prevPivot))
+                    TUtil_SetPivot(self._prim, Gf.Vec3f(self._prevPivot))
             else:
                 if self._prevPivot != None:
-                    self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(self._prevPivot))
+                    TUtil_SetPivot(self._prim, Gf.Vec3f(self._prevPivot))
                 else:
-                    self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(0, 0, 0))
+                    TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
 
 # ------------------------------------------------------------------------.
 class SetOrigin:
