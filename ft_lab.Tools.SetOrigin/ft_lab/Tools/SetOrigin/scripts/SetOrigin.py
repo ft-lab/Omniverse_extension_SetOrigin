@@ -14,11 +14,12 @@ from .TransformUtil import *
 # Change Mesh Center
 # ------------------------------------------------------------------------.
 class ToolReplaceCenter (omni.kit.commands.Command):
-    _prim = None
-    _centerPos = None
+    _prim          = None
+    _centerPos     = None
+    _pivot         = False
     _prevTranslate = None
-    _prevPivot = None
-    _centerPosL = None
+    _prevPivot     = None
+    _centerPosL    = None
 
     # prim            : Target prim.
     # center_position : Position of the center in world coordinates.
@@ -59,10 +60,6 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 if self._prevPivot != None:
                     TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
             else:
-                # TODO : Add Pivot information to xformOpOrder.
-                if self._prevPivot == None:
-                    pass
-
                 p = parentLocalM.Transform(self._centerPos)
                 m2 = GetLocalMatrix(self._prim).GetInverse()
                 p = m2.Transform(p)
