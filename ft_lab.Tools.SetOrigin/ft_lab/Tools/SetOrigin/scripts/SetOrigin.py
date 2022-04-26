@@ -59,12 +59,11 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 if self._prevPivot != None:
                     TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
             else:
-                p = localM.Transform(self._centerPos)
-                self._prim.CreateAttribute("xformOp:translate:pivot", Sdf.ValueTypeNames.Float3, False).Set(Gf.Vec3f(p))
+                TUtil_SetPivot(self._prim, Gf.Vec3f(self._centerPosL))
 
         elif self._prim.IsA(UsdGeom.Xform):
             # For Xform, use only Pivot to adjust center.
-            parentLocalM = GetWorldMatrix(self._prim.GetParent()).GetInverse()
+            TUtil_SetPivot(self._prim, Gf.Vec3f(self._centerPosL))
 
     # Undo process.
     def undo (self):
@@ -91,6 +90,12 @@ class ToolReplaceCenter (omni.kit.commands.Command):
                 else:
                     TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
 
+        elif self._prim.IsA(UsdGeom.Xform):
+            if self._prevPivot != None:
+                TUtil_SetPivot(self._prim, Gf.Vec3f(self._prevPivot))
+            else:
+                TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
+
 # ------------------------------------------------------------------------.
 class SetOrigin:
     def __init__(self):
@@ -115,6 +120,8 @@ class SetOrigin:
         prim = self._getSelectedPrim()
         if prim == None:
             return
+        if prim.IsA(UsdGeom.Mesh) == False and prim.IsA(UsdGeom.Xform) == False:
+            return
         
         # Calculate world center from bounding box.
         bbox = CalcWorldBoundingBox(prim)
@@ -129,6 +136,8 @@ class SetOrigin:
         prim = self._getSelectedPrim()
         if prim == None:
             return
+        if prim.IsA(UsdGeom.Mesh) == False and prim.IsA(UsdGeom.Xform) == False:
+            return
         
         # Calculate world center from bounding box.
         bbox = CalcWorldBoundingBox(prim)
@@ -138,4 +147,3 @@ class SetOrigin:
         # Register a Class and run it.
         omni.kit.commands.register(ToolReplaceCenter)
         omni.kit.commands.execute("ToolReplaceCenter", prim=prim, center_position=bbCenter, use_pivot=True)
-
