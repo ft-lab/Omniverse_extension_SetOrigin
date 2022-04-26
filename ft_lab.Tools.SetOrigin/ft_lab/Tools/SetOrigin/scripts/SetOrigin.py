@@ -31,6 +31,15 @@ class ToolReplaceCenter (omni.kit.commands.Command):
 
     # Execute process.
     def do (self):
+        if self._prim == None:
+            return
+        if self._prim.IsA(UsdGeom.Mesh) == False and self._prim.IsA(UsdGeom.Xform) == False:
+            return
+        
+        # Skip for reference.
+        if self._prim.HasAuthoredReferences():
+            return
+
         self._prevTranslate = self._prim.GetAttribute("xformOp:translate").Get()
         if self._prevTranslate == None:
             self._prevTranslate = Gf.Vec3f(0, 0, 0)
@@ -67,6 +76,15 @@ class ToolReplaceCenter (omni.kit.commands.Command):
 
     # Undo process.
     def undo (self):
+        if self._prim == None:
+            return
+        if self._prim.IsA(UsdGeom.Mesh) == False and self._prim.IsA(UsdGeom.Xform) == False:
+            return
+        
+        # Skip for reference.
+        if self._prim.HasAuthoredReferences():
+            return
+
         if self._prim.IsA(UsdGeom.Mesh):
             if self._pivot == False:
                 meshGeom = UsdGeom.Mesh(self._prim)
@@ -123,6 +141,10 @@ class SetOrigin:
         if prim.IsA(UsdGeom.Mesh) == False and prim.IsA(UsdGeom.Xform) == False:
             return
         
+        # Skip for reference.
+        if prim.HasAuthoredReferences():
+            return
+
         # Calculate world center from bounding box.
         bbox = CalcWorldBoundingBox(prim)
         bbMin, bbMax = bbox.calcBoundingBox()
@@ -139,6 +161,10 @@ class SetOrigin:
         if prim.IsA(UsdGeom.Mesh) == False and prim.IsA(UsdGeom.Xform) == False:
             return
         
+        # Skip for reference.
+        if prim.HasAuthoredReferences():
+            return
+
         # Calculate world center from bounding box.
         bbox = CalcWorldBoundingBox(prim)
         bbMin, bbMax = bbox.calcBoundingBox()
