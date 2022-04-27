@@ -31,8 +31,13 @@ class SetOriginExtension (omni.ext.IExt):
                 setOrigin = SetOrigin()
                 setOrigin.doCenterOfGeometry()
 
+            if mode == 1:
+                setOrigin = SetOrigin()
+                setOrigin.doLowerCenterOfGeometry()
+
         self._sub_menu_list = [
             MenuItemDescription(name="Center of Geometry", onclick_fn=lambda: menu_select(0)),
+            MenuItemDescription(name="Lower center of Geometry", onclick_fn=lambda: menu_select(1)),
         ]
 
         self._menu_list = [
@@ -62,8 +67,6 @@ class SetOriginExtension (omni.ext.IExt):
     # Extension startup.
     # ------------------------------------------.
     def on_startup (self, ext_id):
-        print("[ft_lab.Tools.SetOrigin] startup")
-
         # Initialize menu.
         self.init_menu()
 
@@ -71,8 +74,6 @@ class SetOriginExtension (omni.ext.IExt):
     # Extension shutdown.
     # ------------------------------------------.
     def on_shutdown(self):
-        print("[ft_lab.Tools.SetOrigin] shutdown")
-
         # Term menu.
         self.term_menu()
 
