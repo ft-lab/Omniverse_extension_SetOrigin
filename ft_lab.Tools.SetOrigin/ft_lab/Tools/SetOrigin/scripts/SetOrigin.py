@@ -10,6 +10,18 @@ from .CalcWorldBoundingBox import CalcWorldBoundingBox
 from .MathUtil import *
 from .TransformUtil import *
 
+# Check if Prim can handle.
+def _checkPrim (prim : Usd.Prim):
+    if prim == None:
+        return False
+    if prim.IsA(UsdGeom.Mesh) == False and prim.IsA(UsdGeom.Xform) == False:
+        return False
+    
+    # Skip for reference.
+    if prim.HasAuthoredReferences():
+        return False
+    return True
+
 # ------------------------------------------------------------------------.
 # Change Mesh Center
 # ------------------------------------------------------------------------.
@@ -31,13 +43,7 @@ class ToolReplaceCenter (omni.kit.commands.Command):
 
     # Execute process.
     def do (self):
-        if self._prim == None:
-            return
-        if self._prim.IsA(UsdGeom.Mesh) == False and self._prim.IsA(UsdGeom.Xform) == False:
-            return
-        
-        # Skip for reference.
-        if self._prim.HasAuthoredReferences():
+        if _checkPrim(self._prim) == False:
             return
 
         self._prevTranslate = self._prim.GetAttribute("xformOp:translate").Get()
@@ -76,13 +82,7 @@ class ToolReplaceCenter (omni.kit.commands.Command):
 
     # Undo process.
     def undo (self):
-        if self._prim == None:
-            return
-        if self._prim.IsA(UsdGeom.Mesh) == False and self._prim.IsA(UsdGeom.Xform) == False:
-            return
-        
-        # Skip for reference.
-        if self._prim.HasAuthoredReferences():
+        if _checkPrim(self._prim) == False:
             return
 
         if self._prim.IsA(UsdGeom.Mesh):
@@ -136,13 +136,8 @@ class SetOrigin:
 
     def doCenterOfGeometry (self):
         prim = self._getSelectedPrim()
-        if prim == None:
-            return
-        if prim.IsA(UsdGeom.Mesh) == False and prim.IsA(UsdGeom.Xform) == False:
-            return
-        
-        # Skip for reference.
-        if prim.HasAuthoredReferences():
+
+        if _checkPrim(prim) == False:
             return
 
         # Calculate world center from bounding box.
@@ -156,13 +151,8 @@ class SetOrigin:
         
     def doCenterOfGeometry_pivot (self):
         prim = self._getSelectedPrim()
-        if prim == None:
-            return
-        if prim.IsA(UsdGeom.Mesh) == False and prim.IsA(UsdGeom.Xform) == False:
-            return
-        
-        # Skip for reference.
-        if prim.HasAuthoredReferences():
+
+        if _checkPrim(prim) == False:
             return
 
         # Calculate world center from bounding box.
