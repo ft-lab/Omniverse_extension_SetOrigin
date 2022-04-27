@@ -6,7 +6,7 @@ import omni.usd
 import omni.kit.commands
 import omni.kit.undo
 
-from .CalcWorldBoundingBox import CalcWorldBoundingBox
+from .CalcWorldBoundingBox import *
 from .MathUtil import *
 from .TransformUtil import *
 
@@ -18,8 +18,8 @@ def _checkPrim (prim : Usd.Prim):
         return False
     
     # Skip for reference.
-    if prim.HasAuthoredReferences():
-        return False
+    #if prim.HasAuthoredReferences():
+    #    return False
     return True
 
 # ------------------------------------------------------------------------.
@@ -28,18 +28,15 @@ def _checkPrim (prim : Usd.Prim):
 class ToolReplaceCenter (omni.kit.commands.Command):
     _prim          = None
     _centerPos     = None
-    _pivot         = False
     _prevTranslate = None
     _prevPivot     = None
     _centerPosL    = None
 
     # prim            : Target prim.
     # center_position : Position of the center in world coordinates.
-    # use_pivot       : True if adjusting using Pivot.
-    def __init__ (self, prim : Usd.Prim, center_position : Gf.Vec3f, use_pivot : bool = False):
+    def __init__ (self, prim : Usd.Prim, center_position : Gf.Vec3f):
         self._prim      = prim
         self._centerPos = center_position
-        self._pivot     = use_pivot
 
     # Execute process.
     def do (self):
@@ -55,64 +52,37 @@ class ToolReplaceCenter (omni.kit.commands.Command):
         localM = GetWorldMatrix(self._prim).GetInverse()
         self._centerPosL = localM.Transform(self._centerPos)
 
-        if self._prim.IsA(UsdGeom.Mesh):
-            if self._pivot == False:
-                meshGeom = UsdGeom.Mesh(self._prim)
+        TUtil_SetPivot(self._prim, Gf.Vec3f(self._centerPosL))
 
-                vers = meshGeom.GetPointsAttr().Get()
-                for i in range(len(vers)):
-                    v = vers[i]
-                    vers[i] = v - self._centerPosL
-                meshGeom.CreatePointsAttr(vers)
+        # Calculate world center from bounding box.
+        bbMin, bbMax = CalcWorldBoundingBox(self._prim)
+        bbCenter = (bbMin + bbMax) * 0.5
 
-                # Set position.
-                parentLocalM = GetWorldMatrix(self._prim.GetParent()).GetInverse()
-                p = parentLocalM.Transform(self._centerPos)
-                TUtil_SetTranslate(self._prim, Gf.Vec3f(p))
+        # Recalculate the center position in world coordinates and correct for any misalignment.
+        ddV = Gf.Vec3f(bbCenter - self._centerPos)
+        fMin = 1e-6
+        if abs(ddV[0]) > fMin or abs(ddV[1]) > fMin or abs(ddV[2]) > fMin:
+            parentLocalM = GetWorldMatrix(self._prim.GetParent()).GetInverse()
+            p1 = parentLocalM.Transform(self._centerPos)
+            p2 = parentLocalM.Transform(bbCenter)
 
-                # Set pivot(0, 0, 0).
-                if self._prevPivot != None:
-                    TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
-            else:
-                TUtil_SetPivot(self._prim, Gf.Vec3f(self._centerPosL))
-
-        elif self._prim.IsA(UsdGeom.Xform):
-            # For Xform, use only Pivot to adjust center.
-            TUtil_SetPivot(self._prim, Gf.Vec3f(self._centerPosL))
+            transV = self._prim.GetAttribute("xformOp:translate").Get()
+            if transV == None:
+                transV = Gf.Vec3f(0, 0, 0)
+            transV = Gf.Vec3f(transV) + (p1 - p2)
+            TUtil_SetTranslate(self._prim, Gf.Vec3f(transV))
 
     # Undo process.
     def undo (self):
         if _checkPrim(self._prim) == False:
             return
 
-        if self._prim.IsA(UsdGeom.Mesh):
-            if self._pivot == False:
-                meshGeom = UsdGeom.Mesh(self._prim)
+        TUtil_SetTranslate(self._prim, Gf.Vec3f(self._prevTranslate))
+        if self._prevPivot != None:
+            TUtil_SetPivot(self._prim, Gf.Vec3f(self._prevPivot))
+        else:
+            TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
 
-                vers = meshGeom.GetPointsAttr().Get()
-                for i in range(len(vers)):
-                    v = vers[i]
-                    vers[i] = v + self._centerPosL
-
-                meshGeom.CreatePointsAttr(vers)
-
-                # Set position.
-                TUtil_SetTranslate(self._prim, Gf.Vec3f(self._prevTranslate))
-
-                # Set pivot.
-                if self._prevPivot != None:
-                    TUtil_SetPivot(self._prim, Gf.Vec3f(self._prevPivot))
-            else:
-                if self._prevPivot != None:
-                    TUtil_SetPivot(self._prim, Gf.Vec3f(self._prevPivot))
-                else:
-                    TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
-
-        elif self._prim.IsA(UsdGeom.Xform):
-            if self._prevPivot != None:
-                TUtil_SetPivot(self._prim, Gf.Vec3f(self._prevPivot))
-            else:
-                TUtil_SetPivot(self._prim, Gf.Vec3f(0, 0, 0))
 
 # ------------------------------------------------------------------------.
 class SetOrigin:
@@ -141,25 +111,10 @@ class SetOrigin:
             return
 
         # Calculate world center from bounding box.
-        bbox = CalcWorldBoundingBox(prim)
-        bbMin, bbMax = bbox.calcBoundingBox()
+        bbMin, bbMax = CalcWorldBoundingBox(prim)
         bbCenter = (bbMin + bbMax) * 0.5
 
         # Register a Class and run it.
         omni.kit.commands.register(ToolReplaceCenter)
         omni.kit.commands.execute("ToolReplaceCenter", prim=prim, center_position=bbCenter)
-        
-    def doCenterOfGeometry_pivot (self):
-        prim = self._getSelectedPrim()
-
-        if _checkPrim(prim) == False:
-            return
-
-        # Calculate world center from bounding box.
-        bbox = CalcWorldBoundingBox(prim)
-        bbMin, bbMax = bbox.calcBoundingBox()
-        bbCenter = (bbMin + bbMax) * 0.5
-
-        # Register a Class and run it.
-        omni.kit.commands.register(ToolReplaceCenter)
-        omni.kit.commands.execute("ToolReplaceCenter", prim=prim, center_position=bbCenter, use_pivot=True)
+       

@@ -91,7 +91,63 @@ def TUtil_SetPivot (prim : Usd.Prim, pV : Gf.Vec3f):
         orderList.append("!invert!xformOp:translate:pivot")
         prim.GetAttribute("xformOpOrder").Set(orderList)
 
+# -------------------------------------------.
+# Check the order of Pivot in OpOrder
+# @return -1 ... unknown
+#          0 ... No pivot.
+#          1 ... ["xformOp:translate", "xformOp:translate:pivot", "xformOp:rotateXYZ", "xformOp:scale", "!invert!xformOp:translate:pivot"]
+#          2 ... ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale", "xformOp:translate:pivot", "!invert!xformOp:translate:pivot"]
+# -------------------------------------------.
+def TUtil_ChkOrderOfPivot (prim : Usd.Prim):
+    if prim == None:
+        return
+    
+    transformOrder = prim.GetAttribute("xformOpOrder").Get()
+    orderList = []
+    for sV in transformOrder:
+        orderList.append(sV)
 
+    orderLen = len(orderList)
+    pos1 = -1
+    pos2 = -1
+    for i in range(orderLen):
+        if orderList[i] == "xformOp:translate:pivot":
+            pos1 = i
+        elif orderList[i] == "!invert!xformOp:translate:pivot":
+            pos2 = i
+
+    if pos1 < 0 or pos2 < 0:
+        return 0
+
+    # ["xformOp:translate", "xformOp:translate:pivot", "xformOp:rotateXYZ", "xformOp:scale", "!invert!xformOp:translate:pivot"]
+    if pos1 == 1 and pos2 == orderLen - 1:
+        return 1
+
+    # ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale", "xformOp:translate:pivot", "!invert!xformOp:translate:pivot"]
+    if pos1 == orderLen - 2 and pos2 == orderLen - 1:
+        return 2
+
+    return -1
+
+# -------------------------------------------.
+# Delete Pivot.
+# -------------------------------------------.
+def TUtil_DeletePivot (prim : Usd.Prim):
+    if prim == None:
+        return
+
+    path = prim.GetPath().pathString + ".xformOp:translate:pivot"
+    omni.kit.commands.execute('RemoveProperty', prop_path=path)
+
+    transformOrder = prim.GetAttribute("xformOpOrder").Get()
+    if transformOrder != None:
+        orderList = []
+        for sV in transformOrder:
+            if sV == "xformOp:translate:pivot" or sV == "!invert!xformOp:translate:pivot":
+                continue
+            orderList.append(sV)
+
+        prim.GetAttribute("xformOpOrder").Set(orderList)
 
 
 
