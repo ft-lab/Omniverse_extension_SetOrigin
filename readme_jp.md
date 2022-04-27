@@ -40,3 +40,7 @@ omni.kit.commands.execute('ToolSetOrigin',
 	center_position=Gf.Vec3f(50.0, -50.0, 0.0))
 ```
 
+## 更新履歴
+
+[Update log](./update_log.md)    
+

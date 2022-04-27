@@ -2,6 +2,9 @@
 
 Changes the center position of the rotation or scale for the selected Mesh or Xform.    
 
+https://github.com/ft-lab/Omniverse_extension_SetOrigin
+
+
 ## Usage
 
 1. Activate "ft_lab.Tools.SetOrigin" in the Extension window.

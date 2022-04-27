@@ -13,7 +13,7 @@ description="Automatically adjust the center position or Pivot."
 readme  = "docs/README.md"
 
 # URL of the extension source repository.
-repository = ""
+repository = "https://github.com/ft-lab/Omniverse_extension_SetOrigin"
 
 # One of categories for UI.
 category = "Tool"
