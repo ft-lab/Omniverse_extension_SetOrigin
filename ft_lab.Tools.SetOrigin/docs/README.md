@@ -13,6 +13,6 @@ Changes the center position of the rotation or scale for the selected Mesh or Xf
 
 This Set Origin function adjusts the Translate and Pivot of the Prim.     
 
-Add "ToolReplaceCenter" to omni.kit.commands.      
+Add "ToolSetOrigin" to omni.kit.commands.      
 The argument "prim" specifies Usd.Prim.     
 The argument "center_position" specifies the center position in world coordinates.     

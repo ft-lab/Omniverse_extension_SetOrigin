@@ -25,7 +25,7 @@ def _checkPrim (prim : Usd.Prim):
 # ------------------------------------------------------------------------.
 # Change Mesh Center
 # ------------------------------------------------------------------------.
-class ToolReplaceCenter (omni.kit.commands.Command):
+class ToolSetOrigin (omni.kit.commands.Command):
     _prim          = None
     _centerWPos    = None
     _targetCenterWPos = None
@@ -119,8 +119,8 @@ class SetOrigin:
         bbCenter = (bbMin + bbMax) * 0.5
 
         # Register a Class and run it.
-        omni.kit.commands.register(ToolReplaceCenter)
-        omni.kit.commands.execute("ToolReplaceCenter", prim=prim, center_position=bbCenter)
+        omni.kit.commands.register(ToolSetOrigin)
+        omni.kit.commands.execute("ToolSetOrigin", prim=prim, center_position=bbCenter)
        
 
     def doLowerCenterOfGeometry (self):
@@ -134,5 +134,5 @@ class SetOrigin:
         bbCenter = Gf.Vec3f((bbMin[0] + bbMax[0]) * 0.5, bbMin[1], (bbMin[2] + bbMax[2]) * 0.5)
 
         # Register a Class and run it.
-        omni.kit.commands.register(ToolReplaceCenter)
-        omni.kit.commands.execute("ToolReplaceCenter", prim=prim, center_position=bbCenter)
+        omni.kit.commands.register(ToolSetOrigin)
+        omni.kit.commands.execute("ToolSetOrigin", prim=prim, center_position=bbCenter)
