@@ -25,7 +25,7 @@ Changes the center position of the rotation or scale for the selected Mesh or Xf
 
 ![tools_img_01.jpg](./images/tools_img_01.jpg)    
 
-## Operation Description
+## Additional command in Python
 
 This Set Origin function adjusts the Translate and Pivot of the Prim.     
 

@@ -24,11 +24,11 @@
 
 ![tools_img_01.jpg](./images/tools_img_01.jpg)    
 
-## 操作説明
+## Pythonでの追加コマンド
 
 Set Origin機能は、PrimのTranslateとPivotを調整する機能を提供します。     
 
-omni.kit.commandsに"ToolSetOrigin"を追加します。     
+omni.kit.commandsに"ToolSetOrigin"を追加しています。     
 引数"prim"はUsd.Primを指定します。     
 引数"center_position"はワールド座標での中心にする位置を指定します。    
 
