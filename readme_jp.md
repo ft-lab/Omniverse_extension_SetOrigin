@@ -7,7 +7,8 @@
 
 ## 動作確認環境
 
-* Omniverse Create 2022.1.1/Omniverse Kit 103
+* Windows 10/Ubuntu 20.04
+* Omniverse Create 2022.1.1 (Omniverse Kit 103)
 * Omniverse Code 2022.1.0
 
 ## 使い方
@@ -39,6 +40,10 @@ omni.kit.commands.execute('ToolSetOrigin',
 	prim=Usd.Prim(</World/xxx>),
 	center_position=Gf.Vec3f(50.0, -50.0, 0.0))
 ```
+## Omniverse Extensionでのスクリプトの参考
+
+[https://github.com/ft-lab/omniverse_sample_scripts](https://github.com/ft-lab/omniverse_sample_scripts)    
+
 
 ## 更新履歴
 

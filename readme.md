@@ -8,7 +8,8 @@ Changes the center position of the rotation or scale for the selected Mesh or Xf
 
 ## Operating Environment
 
-* Omniverse Create 2022.1.1/Omniverse Kit 103 
+* Windows 10/Ubuntu 20.04
+* Omniverse Create 2022.1.1 (Omniverse Kit 103)
 * Omniverse Code 2022.1.0
 
 ## Usage
@@ -40,6 +41,11 @@ omni.kit.commands.execute('ToolSetOrigin',
 	prim=Usd.Prim(</World/xxx>),
 	center_position=Gf.Vec3f(50.0, -50.0, 0.0))
 ```
+
+## Script reference in Omniverse Extension
+
+[https://github.com/ft-lab/omniverse_sample_scripts](https://github.com/ft-lab/omniverse_sample_scripts)    
+
 
 ## Update log
 
