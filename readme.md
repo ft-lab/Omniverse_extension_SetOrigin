@@ -37,8 +37,10 @@ The argument "center_position" specifies the center position in world coordinate
 import omni.kit.commands
 from pxr import Usd, Gf
 
+stage = omni.usd.get_context().get_stage()
+
 omni.kit.commands.execute('ToolSetOrigin',
-	prim=Usd.Prim(</World/xxx>),
+	prim=stage.GetPrimAtPath("/World/xxx"),
 	center_position=Gf.Vec3f(50.0, -50.0, 0.0))
 ```
 
